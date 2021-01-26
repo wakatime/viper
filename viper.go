@@ -197,6 +197,9 @@ type Viper struct {
 	configPermissions os.FileMode
 	envPrefix         string
 
+	// Specific commands for ini parsing
+	iniLoadOptions ini.LoadOptions
+
 	automaticEnvApplied bool
 	envKeyReplacer      StringReplacer
 	allowEmptyEnv       bool
@@ -1635,7 +1638,7 @@ func (v *Viper) unmarshalReader(in io.Reader, c map[string]interface{}) error {
 		}
 
 	case "ini":
-		cfg := ini.Empty()
+		cfg := ini.Empty(v.iniLoadOptions)
 		err := cfg.Append(buf.Bytes())
 		if err != nil {
 			return ConfigParseError{err}
@@ -2077,6 +2080,13 @@ func SetConfigPermissions(perm os.FileMode) { v.SetConfigPermissions(perm) }
 
 func (v *Viper) SetConfigPermissions(perm os.FileMode) {
 	v.configPermissions = perm.Perm()
+}
+
+// IniLoadOptions sets the load options for ini parsing.
+func IniLoadOptions(in ini.LoadOptions) Option {
+	return optionFunc(func(v *Viper) {
+		v.iniLoadOptions = in
+	})
 }
 
 func (v *Viper) getConfigType() string {
